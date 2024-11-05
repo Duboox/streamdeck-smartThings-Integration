@@ -6,6 +6,7 @@
   "scripts": {
     "browserify": "browserify build/smartthings-property-inspector.js > com.duboox.streamdeck.smartthings.sdPlugin/public/dist/smartthings-property-inspector-bundle.js && browserify build/smartthings-plugin.js > com.duboox.streamdeck.smartthings.sdPlugin/public/dist/smartthings-plugin-bundle.js",
     "build": "npm run tsc && npm run browserify",
+    "refresh": "./refreshPlugin.sh",
     "lint": "eslint src/**/*.ts",
     "test": "jest --coverage",
     "tsc": "tsc -p tsconfig.json"
