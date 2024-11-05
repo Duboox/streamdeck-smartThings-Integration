@@ -8,7 +8,7 @@ else
   pkill 'Stream Deck'
 fi
 
-pluginName='com.thibautsabot.streamdeck.smartthings'
+pluginName='com.duboox.streamdeck.smartthings'
 
 if [[ "$OSTYPE" == "msys" ]]; then
   pluginsDir="$HOME\AppData\Roaming\Elgato\StreamDeck\Plugins"

@@ -16,7 +16,7 @@ describe('Test scene action', () => {
 
   const sceneAction = new SceneAction(
     new FakeStreamdeckApi() as Smartthings,
-    'com.thibautsabot.streamdeck.scene'
+    'com.duboox.streamdeck.scene'
   )
 
   describe('onKeyUp', () => {

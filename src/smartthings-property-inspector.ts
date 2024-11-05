@@ -18,7 +18,7 @@ import {
 } from './utils/interface'
 import { PagedResult, SceneSummary, DeviceList } from '@smartthings/core-sdk'
 
-const pluginName = 'com.thibautsabot.streamdeck'
+const pluginName = 'com.duboox.streamdeck'
 
 class SmartthingsPI extends StreamDeckPropertyInspectorHandler {
   private selectOptions?: SelectElement[]

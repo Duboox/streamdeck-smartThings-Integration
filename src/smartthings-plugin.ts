@@ -5,8 +5,8 @@ import { StreamDeckPluginHandler } from 'streamdeck-typescript'
 export class Smartthings extends StreamDeckPluginHandler {
   constructor() {
     super()
-    new SceneAction(this, 'com.thibautsabot.streamdeck.scene')
-    new DeviceAction(this, 'com.thibautsabot.streamdeck.device')
+    new SceneAction(this, 'com.duboox.streamdeck.scene')
+    new DeviceAction(this, 'com.duboox.streamdeck.device')
   }
 }
 

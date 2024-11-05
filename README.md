@@ -2,9 +2,9 @@
 
 A StreamDeck plugin to control your smartthings devices and scenes.
 
-Donwload the release from https://github.com/thibautsabot/streamdeck-plugin-smartthings/releases
+Donwload the release from https://github.com/duboox/streamdeck-plugin-smartthings/releases
 
-Open `com.thibautsabot.streamdeck.smartthings.streamDeckPlugin` and install the plugin !
+Open `com.duboox.streamdeck.smartthings.streamDeckPlugin` and install the plugin !
 
 ---
 
@@ -34,7 +34,7 @@ Enter a name and tick at least "Devices" and "Scenes".
 
 ## Informations
 
-Made from https://github.com/thibautsabot/typescript-streamdeck-boilerplate/.
+Made from https://github.com/duboox/typescript-streamdeck-boilerplate/.
 
 For now, you can only configure Devices and Scene.
 

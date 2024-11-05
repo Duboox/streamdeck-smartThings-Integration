@@ -9,7 +9,7 @@
         }
       ],
       "Tooltip": "Scenes",
-      "UUID": "com.thibautsabot.streamdeck.scene"
+      "UUID": "com.duboox.streamdeck.scene"
     },
     {
       "Icon": "icons/device",
@@ -20,11 +20,11 @@
         }
       ],
       "Tooltip": "Devices",
-      "UUID": "com.thibautsabot.streamdeck.device"
+      "UUID": "com.duboox.streamdeck.device"
     }
   ],
   "SDKVersion": 2,
-  "Author": "thibautsabot",
+  "Author": "duboox",
   "Category": "Smartthings",
   "CategoryIcon": "icons/smartthings_cat",
   "CodePath": "public/plugin.html",

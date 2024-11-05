@@ -16,7 +16,7 @@ describe('Test device action', () => {
 
   const deviceAction = new DeviceAction(
     new FakeStreamdeckApi() as Smartthings,
-    'com.thibautsabot.streamdeck.device'
+    'com.duboox.streamdeck.device'
   )
 
   describe('onKeyUp', () => {
