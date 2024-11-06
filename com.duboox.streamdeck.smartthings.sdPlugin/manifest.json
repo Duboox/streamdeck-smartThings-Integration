@@ -16,13 +16,13 @@
       "Name": "Device",
       "States": [
         {
-          "Image": "icons/light-bulb/light-bulb-off",
-          "Name": "Off",
+          "Image": "icons/light-bulb/light-bulb",
+          "Name": "On",
           "State": 0
         },
         {
-          "Image": "icons/light-bulb/light-bulb",
-          "Name": "On",
+          "Image": "icons/light-bulb/light-bulb-off",
+          "Name": "Off",
           "State": 1
         }
       ],

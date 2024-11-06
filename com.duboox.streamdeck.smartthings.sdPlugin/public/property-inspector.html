@@ -8,18 +8,27 @@
     </head>
     <body>
         <div class="sdpi-wrapper" id="mainSettings">
+            <!-- ************************* GET PAT BTN ************************* -->
+            <div class="sdpi-item">
+                <div class="sdpi-item-label">Get PAT (List, See, Control) All devices</div>
+                <button class="sdpi-item-value" id="pat_button">default validate value</button>
+            </div>
+            <!-- ************************* PAT INPUT ************************* -->
             <div class="sdpi-item">
                 <div class="sdpi-item-label host-label">Personal access token (PAT)</div>
                 <input class="sdpi-item-value" type="text" id="accesstoken">
             </div>
+            <!-- ************************* FETCH DEVICES ************************* -->
             <div class="sdpi-item">
                 <div class="sdpi-item-label">Validate</div>
                 <button class="sdpi-item-value" id="validate_button">default validate value</button>
             </div>
+            <!-- ************************* SELECT DEVICE ************************* -->
             <div class="sdpi-item">
                 <div class="sdpi-item-label" id="select_label">Default select value</div>
                     <select class="sdpi-item-value select" id="select_value"></select>
             </div>
+            <!-- ************************* BEHAVIOR ************************* -->
             <div class="sdpi-item">
                 <div class="hidden" id="behaviour">
                     <div class="sdpi-item-label">Behaviour</div>
@@ -33,8 +42,53 @@
                             <label for="more">Brighter</label><br/>
                             <input type="radio" id="less" name="behaviour" value="less">
                             <label for="less">Darker</label>
+                            <input type="radio" id="colors" name="behaviour" value="colors">
+                            <label for="color">Colors</label>
                         </div>
                     </fieldset>
+                </div>
+            </div>
+            <!-- ************************* COLOR ************************* -->
+            <div class="sdpi-item">
+                <div class="hidden" id="colors-inputs">
+                    <div class="sdpi-item-label">Colors</div>
+                    <fieldset>
+                        <legend>Enter Colors Ex: #FF5733</legend>
+                        <div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Color 1</div>
+                                <input class="sdpi-item-value" type="text" id="color-1">
+                            </div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Color 2</div>
+                                <input class="sdpi-item-value" type="text" id="color-2">
+                            </div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Color 3</div>
+                                <input class="sdpi-item-value" type="text" id="color-3">
+                            </div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Color 4</div>
+                                <input class="sdpi-item-value" type="text" id="color-4">
+                            </div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Color 5</div>
+                                <input class="sdpi-item-value" type="text" id="color-5">
+                            </div>
+                            <div class="sdpi-item">
+                                <div class="sdpi-item-label">Save</div>
+                                <button class="sdpi-item-value" id="save_colors">Save</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                    
+                </div>
+            </div>
+             <!-- ************************* DEBUG ************************* -->
+            <div class="sdpi-item">
+                <div class="hidden" id="debug">
+                    <div class="sdpi-item-label">Debug</div>
+                    <span id="debug-info"></span>
                 </div>
             </div>
         </div>

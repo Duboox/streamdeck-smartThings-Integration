@@ -25,95 +25,114 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
         this.plugin = plugin;
         this.actionName = actionName;
     }
+    onKeyDown(eventData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.runAction(eventData);
+        });
+    }
     onKeyUp(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
+        });
+    }
+    runAction(_a) {
         return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
             var _b, _c, _d;
             const globalSettings = this.plugin.settingsManager.getGlobalSettings();
             if ((0, index_1.isGlobalSettingsSet)(globalSettings)) {
                 const token = globalSettings.accessToken;
                 const deviceId = payload.settings.deviceId;
-                const deviceStatus = yield (0, index_1.fetchApi)({
-                    endpoint: `/devices/${deviceId}/status`,
-                    method: 'GET',
-                    accessToken: token,
-                });
+                const deviceStatus = yield this.getDeviceStatus(deviceId, token);
                 if (((_b = deviceStatus.components) === null || _b === void 0 ? void 0 : _b.main.switch) === undefined &&
                     ((_c = deviceStatus.components) === null || _c === void 0 ? void 0 : _c.main.doorControl) === undefined) {
-                    console.warn('Only switch devices and Garage Doors are supported at the moment !');
+                    console.warn("Only switch devices and Garage Doors are supported at the moment !");
                     return;
                 }
-                if ('switch' in deviceStatus.components.main) {
+                if ("switch" in deviceStatus.components.main) {
                     switch (payload.settings.behaviour) {
-                        case 'toggle':
-                            const isActive = deviceStatus.components.main.switch.switch.value === 'on';
-                            yield (0, index_1.fetchApi)({
-                                endpoint: `/devices/${deviceId}/commands`,
-                                method: 'POST',
-                                accessToken: token,
-                                body: JSON.stringify([
-                                    {
-                                        capability: 'switch',
-                                        command: isActive ? 'off' : 'on',
-                                    },
-                                ]),
-                            });
-                            this.plugin.setState(isActive ? streamdeck_typescript_1.StateType.ON : streamdeck_typescript_1.StateType.OFF, context);
+                        case "toggle":
+                            const isActive = deviceStatus.components.main.switch.switch.value === "on";
+                            yield this.toggleDevice(deviceId, token, isActive);
+                            this.plugin.setState(isActive ? streamdeck_typescript_1.StateType.OFF : streamdeck_typescript_1.StateType.ON, context);
                             break;
-                        case 'more':
-                            const nextLevel = (deviceStatus.components.main.switchLevel.level
-                                .value += 10);
-                            yield (0, index_1.fetchApi)({
-                                endpoint: `/devices/${deviceId}/commands`,
-                                method: 'POST',
-                                accessToken: token,
-                                body: JSON.stringify([
-                                    {
-                                        capability: 'switchLevel',
-                                        command: 'setLevel',
-                                        arguments: [nextLevel > 100 ? 100 : nextLevel],
-                                    },
-                                ]),
-                            });
+                        case "more":
+                            const nextLevel = (deviceStatus.components.main.switchLevel.level.value += 10);
+                            yield this.setSwitchLevel(deviceId, token, nextLevel > 100 ? 100 : nextLevel);
                             break;
-                        case 'less':
-                            const prevLevel = (deviceStatus.components.main.switchLevel.level
-                                .value -= 10);
-                            yield (0, index_1.fetchApi)({
-                                endpoint: `/devices/${deviceId}/commands`,
-                                method: 'POST',
-                                accessToken: token,
-                                body: JSON.stringify([
-                                    {
-                                        capability: 'switchLevel',
-                                        command: 'setLevel',
-                                        arguments: [prevLevel < 0 ? 0 : prevLevel],
-                                    },
-                                ]),
-                            });
+                        case "less":
+                            const prevLevel = (deviceStatus.components.main.switchLevel.level.value -= 10);
+                            yield this.setSwitchLevel(deviceId, token, prevLevel < 0 ? 0 : prevLevel);
                             break;
                     }
                 }
-                if ('doorControl' in ((_d = deviceStatus.components) === null || _d === void 0 ? void 0 : _d.main)) {
-                    const isActive = deviceStatus.components.main.doorControl.door.value === 'open';
-                    yield (0, index_1.fetchApi)({
-                        endpoint: `/devices/${deviceId}/commands`,
-                        method: 'POST',
-                        accessToken: token,
-                        body: JSON.stringify([
-                            {
-                                capability: 'doorControl',
-                                command: isActive ? 'close' : 'open',
-                            },
-                        ]),
-                    });
+                if ("doorControl" in ((_d = deviceStatus.components) === null || _d === void 0 ? void 0 : _d.main)) {
+                    const isActive = deviceStatus.components.main.doorControl.door.value === "open";
+                    yield this.toggleDoor(deviceId, token, isActive);
                 }
             }
+        });
+    }
+    getDeviceStatus(deviceId, token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield (0, index_1.fetchApi)({
+                endpoint: `/devices/${deviceId}/status`,
+                method: "GET",
+                accessToken: token,
+            });
+        });
+    }
+    toggleDevice(deviceId, token, isActive) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield (0, index_1.fetchApi)({
+                endpoint: `/devices/${deviceId}/commands`,
+                method: "POST",
+                accessToken: token,
+                body: JSON.stringify([
+                    {
+                        capability: "switch",
+                        command: isActive ? "off" : "on",
+                    },
+                ]),
+            });
+        });
+    }
+    setSwitchLevel(deviceId, token, level) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield (0, index_1.fetchApi)({
+                endpoint: `/devices/${deviceId}/commands`,
+                method: "POST",
+                accessToken: token,
+                body: JSON.stringify([
+                    {
+                        capability: "switchLevel",
+                        command: "setLevel",
+                        arguments: [level],
+                    },
+                ]),
+            });
+        });
+    }
+    toggleDoor(deviceId, token, isActive) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield (0, index_1.fetchApi)({
+                endpoint: `/devices/${deviceId}/commands`,
+                method: "POST",
+                accessToken: token,
+                body: JSON.stringify([
+                    {
+                        capability: "doorControl",
+                        command: isActive ? "close" : "open",
+                    },
+                ]),
+            });
         });
     }
 }
 exports.DeviceAction = DeviceAction;
 __decorate([
-    (0, streamdeck_typescript_1.SDOnActionEvent)('keyUp')
+    (0, streamdeck_typescript_1.SDOnActionEvent)("keyDown")
+], DeviceAction.prototype, "onKeyDown", null);
+__decorate([
+    (0, streamdeck_typescript_1.SDOnActionEvent)("keyUp")
 ], DeviceAction.prototype, "onKeyUp", null);
 
 },{"../utils/index":4,"streamdeck-typescript":15}],2:[function(require,module,exports){

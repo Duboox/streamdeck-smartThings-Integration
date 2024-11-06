@@ -18,47 +18,80 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const streamdeck_typescript_1 = require("streamdeck-typescript");
 const index_1 = require("./utils/index");
-const pluginName = 'com.duboox.streamdeck';
+const pluginName = "com.duboox.streamdeck";
 class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorHandler {
     constructor() {
         super();
-        this.selectedBehaviour = 'toggle';
+        this.selectedBehaviour = "toggle";
     }
     onDocumentLoaded() {
-        const validateButton = document.getElementById('validate_button');
-        const selectLabel = document.getElementById('select_label');
-        const select = document.getElementById('select_value');
-        const behaviour = document.getElementById('behaviour');
-        validateButton === null || validateButton === void 0 ? void 0 : validateButton.addEventListener('click', this.onValidateButtonPressed.bind(this));
-        select === null || select === void 0 ? void 0 : select.addEventListener('change', this.onSelectChanged.bind(this));
-        behaviour === null || behaviour === void 0 ? void 0 : behaviour.addEventListener('change', this.onRadioChanged.bind(this));
+        const willDebug = true;
+        const validateButton = document.getElementById("validate_button");
+        const patButton = document.getElementById("pat_button");
+        const selectLabel = document.getElementById("select_label");
+        const select = document.getElementById("select_value");
+        const behaviour = document.getElementById("behaviour");
+        const colorsInput = document.getElementById("colors-inputs");
+        const saveColorsButton = document.getElementById("save_colors");
+        const debug = document.getElementById("debug");
+        validateButton === null || validateButton === void 0 ? void 0 : validateButton.addEventListener("click", this.onValidateButtonPressed.bind(this));
+        patButton === null || patButton === void 0 ? void 0 : patButton.addEventListener("click", this.onPatButtonPressed.bind(this));
+        select === null || select === void 0 ? void 0 : select.addEventListener("change", this.onSelectChanged.bind(this));
+        behaviour === null || behaviour === void 0 ? void 0 : behaviour.addEventListener("change", this.onRadioChanged.bind(this));
+        saveColorsButton === null || saveColorsButton === void 0 ? void 0 : saveColorsButton.addEventListener("click", this.onSaveColorsButtonPressed.bind(this));
         switch (this.actionInfo.action) {
-            case pluginName + '.device': {
-                selectLabel.textContent = 'Devices';
-                validateButton.textContent = 'Fetch devices list';
-                (0, index_1.addSelectOption)({ select: select, element: { id: 'none', name: 'No device' } });
-                behaviour.className = 'sdpi-item';
+            case pluginName + ".device": {
+                selectLabel.textContent = "Devices";
+                patButton.textContent = "Get Personal Access Token";
+                validateButton.textContent = "Fetch devices list";
+                (0, index_1.addSelectOption)({ select: select, element: { id: "none", name: "No device" } });
+                behaviour.className = "sdpi-item";
+                if (willDebug) {
+                    debug.className = "sdpi-item";
+                }
                 break;
             }
-            case pluginName + '.scene': {
-                validateButton.textContent = 'Fetch scenes list';
-                selectLabel.textContent = 'Scenes';
-                (0, index_1.addSelectOption)({ select: select, element: { id: 'none', name: 'No scene' } });
+            case pluginName + ".scene": {
+                validateButton.textContent = "Fetch scenes list";
+                selectLabel.textContent = "Scenes";
+                (0, index_1.addSelectOption)({ select: select, element: { id: "none", name: "No scene" } });
                 break;
             }
         }
     }
+    onPatButtonPressed() {
+        window.open("https://account.smartthings.com/tokens");
+    }
+    onSaveColorsButtonPressed() {
+        var _a;
+        const qtyColors = 5;
+        const finalColors = [];
+        for (let i = 1; i <= qtyColors; i++) {
+            const colorValue = (_a = document.getElementById(`color-${i}`)) === null || _a === void 0 ? void 0 : _a.value;
+            if (/^#[0-9A-F]{6}$/i.test(colorValue)) {
+                finalColors.push(colorValue);
+            }
+        }
+        this.setSettings({
+            selectOptions: this.selectOptions,
+            deviceId: this.selectedOptionId,
+            behaviour: this.selectedBehaviour,
+            colors: finalColors,
+        });
+        const debugInfo = document.getElementById("debug-info");
+        debugInfo.innerText = finalColors.toString();
+    }
     onValidateButtonPressed() {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const accessToken = (_a = document.getElementById('accesstoken')) === null || _a === void 0 ? void 0 : _a.value;
+            const accessToken = (_a = document.getElementById("accesstoken")) === null || _a === void 0 ? void 0 : _a.value;
             this.settingsManager.setGlobalSettings({ accessToken });
             let elements = [];
             switch (this.actionInfo.action) {
-                case pluginName + '.scene': {
+                case pluginName + ".scene": {
                     const res = yield (0, index_1.fetchApi)({
-                        endpoint: '/scenes',
-                        method: 'GET',
+                        endpoint: "/scenes",
+                        method: "GET",
                         accessToken,
                     });
                     elements = res.items.map((item) => ({
@@ -67,10 +100,10 @@ class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorH
                     }));
                     break;
                 }
-                case pluginName + '.device': {
+                case pluginName + ".device": {
                     const res = yield (0, index_1.fetchApi)({
-                        endpoint: '/devices',
-                        method: 'GET',
+                        endpoint: "/devices",
+                        method: "GET",
                         accessToken,
                     });
                     elements = res.items.map((item) => ({
@@ -91,18 +124,18 @@ class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorH
         const newSelection = e.target.value;
         this.selectedOptionId = newSelection;
         switch (this.actionInfo.action) {
-            case pluginName + '.scene': {
+            case pluginName + ".scene": {
                 this.setSettings({
                     selectOptions: this.selectOptions,
                     sceneId: newSelection,
                 });
                 break;
             }
-            case pluginName + '.device': {
+            case pluginName + ".device": {
                 this.setSettings({
                     selectOptions: this.selectOptions,
                     deviceId: newSelection,
-                    behaviour: this.selectedBehaviour
+                    behaviour: this.selectedBehaviour,
                 });
                 break;
             }
@@ -110,12 +143,21 @@ class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorH
     }
     onRadioChanged(e) {
         const newSelection = e.target.value;
+        const debugInfo = document.getElementById("debug-info");
+        debugInfo.innerText = newSelection;
+        const colorsInput = document.getElementById("colors-inputs");
+        if (newSelection === "colors") {
+            colorsInput.className = "sdpi-item";
+        }
+        else {
+            colorsInput.className = "hidden";
+        }
         switch (this.actionInfo.action) {
-            case pluginName + '.device': {
+            case pluginName + ".device": {
                 this.setSettings({
                     selectOptions: this.selectOptions,
                     deviceId: this.selectedOptionId,
-                    behaviour: newSelection
+                    behaviour: newSelection,
                 });
                 break;
             }
@@ -127,14 +169,14 @@ class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorH
         if ((0, index_1.isGlobalSettingsSet)(globalSettings)) {
             const accessToken = globalSettings.accessToken;
             if (accessToken) {
-                ;
-                document.getElementById('accesstoken').value = accessToken;
+                document.getElementById("accesstoken").value = accessToken;
             }
         }
     }
-    onReceiveSettings({ payload, }) {
-        var _a, _b, _c;
-        const select = document.getElementById('select_value');
+    onReceiveSettings({ payload }) {
+        var _a, _b, _c, _d;
+        const select = document.getElementById("select_value");
+        const debugInfo = document.getElementById("debug-info");
         this.selectOptions = payload.settings.selectOptions;
         select.length = 1;
         (_a = this.selectOptions) === null || _a === void 0 ? void 0 : _a.forEach((element) => (0, index_1.addSelectOption)({ select, element }));
@@ -144,24 +186,31 @@ class SmartthingsPI extends streamdeck_typescript_1.StreamDeckPropertyInspectorH
             this.selectedOptionId = deviceId;
             this.selectedBehaviour = payload.settings.behaviour;
             document.getElementById(this.selectedBehaviour).checked = true;
-            activeIndex = ((_b = this.selectOptions) === null || _b === void 0 ? void 0 : _b.findIndex((element) => element.id === deviceId)) || 0;
+            if (payload.settings.behaviour === "colors") {
+                document.getElementById("colors-inputs").className = "sdpi-item";
+                debugInfo.innerText = JSON.stringify(payload.settings);
+                (_b = payload.settings.colors) === null || _b === void 0 ? void 0 : _b.forEach((color, i) => {
+                    document.getElementById(`color-${i + 1}`).value = color;
+                });
+            }
+            activeIndex = ((_c = this.selectOptions) === null || _c === void 0 ? void 0 : _c.findIndex((element) => element.id === deviceId)) || 0;
         }
         if ((0, index_1.isSceneSetting)(payload.settings)) {
             const sceneId = payload.settings.sceneId;
-            activeIndex = ((_c = this.selectOptions) === null || _c === void 0 ? void 0 : _c.findIndex((element) => element.id === sceneId)) || 0;
+            activeIndex = ((_d = this.selectOptions) === null || _d === void 0 ? void 0 : _d.findIndex((element) => element.id === sceneId)) || 0;
             this.selectedOptionId = sceneId;
         }
         select.selectedIndex = activeIndex !== undefined ? activeIndex + 1 : 0;
     }
 }
 __decorate([
-    (0, streamdeck_typescript_1.SDOnPiEvent)('documentLoaded')
+    (0, streamdeck_typescript_1.SDOnPiEvent)("documentLoaded")
 ], SmartthingsPI.prototype, "onDocumentLoaded", null);
 __decorate([
-    (0, streamdeck_typescript_1.SDOnPiEvent)('globalSettingsAvailable')
+    (0, streamdeck_typescript_1.SDOnPiEvent)("globalSettingsAvailable")
 ], SmartthingsPI.prototype, "propertyInspectorDidAppear", null);
 __decorate([
-    (0, streamdeck_typescript_1.SDOnPiEvent)('didReceiveSettings')
+    (0, streamdeck_typescript_1.SDOnPiEvent)("didReceiveSettings")
 ], SmartthingsPI.prototype, "onReceiveSettings", null);
 new SmartthingsPI();
 

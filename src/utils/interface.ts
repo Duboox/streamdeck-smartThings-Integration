@@ -1,4 +1,5 @@
 import { SelectElement } from './index'
+import { KeyUpEvent, SDOnActionEvent, StateType, StreamDeckAction } from 'streamdeck-typescript'
 
 export interface GlobalSettingsInterface {
   accessToken: string
@@ -14,4 +15,5 @@ export interface SceneSettingsInterface extends CommonSettingsInterface {
 export interface DeviceSettingsInterface extends CommonSettingsInterface {
   deviceId: string
   behaviour: string
+  colors?: string[]
 }
