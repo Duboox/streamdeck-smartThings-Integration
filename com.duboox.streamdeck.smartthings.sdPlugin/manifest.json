@@ -16,7 +16,7 @@
       "Name": "Device",
       "States": [
         {
-          "Image": "icons/device_action"
+          "Image": "icons/light-bulb/light-bulb-off"
         }
       ],
       "Tooltip": "Devices",
