@@ -1,5 +1,5 @@
 import { DeviceSettingsInterface, GlobalSettingsInterface } from '../utils/interface'
-import { KeyUpEvent, SDOnActionEvent, StreamDeckAction } from 'streamdeck-typescript'
+import { KeyUpEvent, SDOnActionEvent, StateType, StreamDeckAction } from 'streamdeck-typescript'
 import { fetchApi, isGlobalSettingsSet } from '../utils/index'
 
 import { DeviceStatus } from '@smartthings/core-sdk'
@@ -11,7 +11,7 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
   }
 
   @SDOnActionEvent('keyUp')
-  public async onKeyUp({ payload }: KeyUpEvent<DeviceSettingsInterface>): Promise<void> {
+  public async onKeyUp({ context, payload }: KeyUpEvent<DeviceSettingsInterface>): Promise<void> {
     const globalSettings = this.plugin.settingsManager.getGlobalSettings<GlobalSettingsInterface>()
 
     if (isGlobalSettingsSet(globalSettings)) {
@@ -47,6 +47,7 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
                 },
               ]),
             })
+            this.plugin.setState(isActive ? StateType.ON : StateType.OFF, context)
             break
           case 'more':
             const nextLevel = ((deviceStatus.components.main.switchLevel.level

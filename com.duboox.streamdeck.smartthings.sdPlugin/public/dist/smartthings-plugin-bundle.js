@@ -26,7 +26,7 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
         this.actionName = actionName;
     }
     onKeyUp(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ payload }) {
+        return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
             var _b, _c, _d;
             const globalSettings = this.plugin.settingsManager.getGlobalSettings();
             if ((0, index_1.isGlobalSettingsSet)(globalSettings)) {
@@ -57,6 +57,7 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
                                     },
                                 ]),
                             });
+                            this.plugin.setState(isActive ? streamdeck_typescript_1.StateType.ON : streamdeck_typescript_1.StateType.OFF, context);
                             break;
                         case 'more':
                             const nextLevel = (deviceStatus.components.main.switchLevel.level
