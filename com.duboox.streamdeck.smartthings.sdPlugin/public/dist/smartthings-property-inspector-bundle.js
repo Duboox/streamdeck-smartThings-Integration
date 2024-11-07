@@ -226,7 +226,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hexToHS = exports.addSelectOption = void 0;
+exports.hslToHex = exports.hexToHS = exports.addSelectOption = void 0;
 exports.isGlobalSettingsSet = isGlobalSettingsSet;
 exports.isDeviceSetting = isDeviceSetting;
 exports.isSceneSetting = isSceneSetting;
@@ -253,7 +253,7 @@ function fetchApi(_a) {
 }
 const addSelectOption = ({ select, element }) => {
     if (element.id && element.name) {
-        const option = document.createElement('option');
+        const option = document.createElement("option");
         option.value = element.id;
         option.text = element.name.slice(0, 30);
         select.add(option);
@@ -261,11 +261,11 @@ const addSelectOption = ({ select, element }) => {
 };
 exports.addSelectOption = addSelectOption;
 const hexToHS = (hex) => {
-    hex = hex.replace('#', '');
+    hex = hex.replace("#", "");
     let r = parseInt(hex.substring(0, 2), 16);
     let g = parseInt(hex.substring(2, 4), 16);
     let b = parseInt(hex.substring(4, 6), 16);
-    r /= 255, g /= 255, b /= 255;
+    (r /= 255), (g /= 255), (b /= 255);
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const l = (max + min) / 2;
     if (max == min) {
@@ -293,6 +293,20 @@ const hexToHS = (hex) => {
     }
 };
 exports.hexToHS = hexToHS;
+const hslToHex = (hP, s, l = 50) => {
+    const h = (hP * 360) / 100;
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n) => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color)
+            .toString(16)
+            .padStart(2, "0");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+};
+exports.hslToHex = hslToHex;
 
 },{}],3:[function(require,module,exports){
 "use strict";

@@ -30,24 +30,58 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
             this.runAction(eventData);
         });
     }
-    onKeyUp(_a) {
-        return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
+    willAppear(eventData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.checkDeviceStatus(eventData);
         });
     }
-    runAction(_a) {
+    checkDeviceStatus(_a) {
         return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
-            var _b, _c, _d, _e;
+            var _b;
             const globalSettings = this.plugin.settingsManager.getGlobalSettings();
             if ((0, index_1.isGlobalSettingsSet)(globalSettings)) {
                 const token = globalSettings.accessToken;
                 const deviceId = payload.settings.deviceId;
+                const behavior = payload.settings.behaviour;
+                const deviceStatus = yield this.getDeviceStatus(deviceId, token);
+                const mainComponents = (_b = deviceStatus.components) === null || _b === void 0 ? void 0 : _b.main;
+                if (!mainComponents) {
+                    return;
+                }
+                if ("switch" in mainComponents && behavior === "toggle") {
+                    this.plugin.setState(mainComponents.switch.switch.value === "on" ? streamdeck_typescript_1.StateType.ON : streamdeck_typescript_1.StateType.OFF, context);
+                }
+                if ("switchLevel" in mainComponents && behavior === "more") {
+                    yield this.setSwitchLevel(deviceId, token, mainComponents.switchLevel.level.value);
+                }
+                if ("switchLevel" in mainComponents && behavior === "less") {
+                    yield this.setSwitchLevel(deviceId, token, mainComponents.switchLevel.level.value);
+                }
+                if ("colorControl" in mainComponents && behavior === "colors") {
+                    const huePercent = mainComponents.colorControl.hue.value;
+                    const saturation = mainComponents.colorControl.saturation.value;
+                    this.actualColor = (0, index_1.hslToHex)(huePercent, saturation);
+                    const svg = this.getSVGImageColor(this.actualColor);
+                    const icon = `data:image/svg+xml;base64,${btoa(svg)}`;
+                    this.plugin.setImageFromUrl(icon, context, streamdeck_typescript_1.TargetType.HARDWARE);
+                }
+            }
+        });
+    }
+    runAction(_a) {
+        return __awaiter(this, arguments, void 0, function* ({ context, payload }) {
+            var _b, _c, _d;
+            const globalSettings = this.plugin.settingsManager.getGlobalSettings();
+            if ((0, index_1.isGlobalSettingsSet)(globalSettings)) {
+                const token = globalSettings.accessToken;
+                const deviceId = payload.settings.deviceId;
+                const behavior = payload.settings.behaviour;
                 const deviceStatus = yield this.getDeviceStatus(deviceId, token);
                 if (((_b = deviceStatus.components) === null || _b === void 0 ? void 0 : _b.main.switch) === undefined &&
                     ((_c = deviceStatus.components) === null || _c === void 0 ? void 0 : _c.main.doorControl) === undefined) {
                     console.warn("Only switch devices and Garage Doors are supported at the moment !");
                     return;
                 }
-                const behavior = payload.settings.behaviour;
                 const mainComponents = deviceStatus.components.main;
                 if ("switch" in mainComponents && behavior === "toggle") {
                     const isActive = mainComponents.switch.switch.value === "on";
@@ -62,7 +96,7 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
                     const prevLevel = (mainComponents.switchLevel.level.value -= 10);
                     yield this.setSwitchLevel(deviceId, token, prevLevel < 0 ? 0 : prevLevel);
                 }
-                if ("colorControl" in ((_d = deviceStatus.components) === null || _d === void 0 ? void 0 : _d.main) && behavior === "colors") {
+                if ("colorControl" in mainComponents && behavior === "colors") {
                     const colorsSettings = payload.settings.colors;
                     if (!colorsSettings) {
                         return;
@@ -83,7 +117,7 @@ class DeviceAction extends streamdeck_typescript_1.StreamDeckAction {
                     const icon = `data:image/svg+xml;base64,${btoa(svg)}`;
                     this.plugin.setImageFromUrl(icon, context, streamdeck_typescript_1.TargetType.HARDWARE);
                 }
-                if ("doorControl" in ((_e = deviceStatus.components) === null || _e === void 0 ? void 0 : _e.main) && behavior === "toggle") {
+                if ("doorControl" in ((_d = deviceStatus.components) === null || _d === void 0 ? void 0 : _d.main) && behavior === "toggle") {
                     const isActive = mainComponents.doorControl.door.value === "open";
                     yield this.toggleDoor(deviceId, token, isActive);
                 }
@@ -191,8 +225,8 @@ __decorate([
     (0, streamdeck_typescript_1.SDOnActionEvent)("keyDown")
 ], DeviceAction.prototype, "onKeyDown", null);
 __decorate([
-    (0, streamdeck_typescript_1.SDOnActionEvent)("keyUp")
-], DeviceAction.prototype, "onKeyUp", null);
+    (0, streamdeck_typescript_1.SDOnActionEvent)("willAppear")
+], DeviceAction.prototype, "willAppear", null);
 
 },{"../utils/index":4,"streamdeck-typescript":15}],2:[function(require,module,exports){
 "use strict";
@@ -270,7 +304,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hexToHS = exports.addSelectOption = void 0;
+exports.hslToHex = exports.hexToHS = exports.addSelectOption = void 0;
 exports.isGlobalSettingsSet = isGlobalSettingsSet;
 exports.isDeviceSetting = isDeviceSetting;
 exports.isSceneSetting = isSceneSetting;
@@ -297,7 +331,7 @@ function fetchApi(_a) {
 }
 const addSelectOption = ({ select, element }) => {
     if (element.id && element.name) {
-        const option = document.createElement('option');
+        const option = document.createElement("option");
         option.value = element.id;
         option.text = element.name.slice(0, 30);
         select.add(option);
@@ -305,11 +339,11 @@ const addSelectOption = ({ select, element }) => {
 };
 exports.addSelectOption = addSelectOption;
 const hexToHS = (hex) => {
-    hex = hex.replace('#', '');
+    hex = hex.replace("#", "");
     let r = parseInt(hex.substring(0, 2), 16);
     let g = parseInt(hex.substring(2, 4), 16);
     let b = parseInt(hex.substring(4, 6), 16);
-    r /= 255, g /= 255, b /= 255;
+    (r /= 255), (g /= 255), (b /= 255);
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const l = (max + min) / 2;
     if (max == min) {
@@ -337,6 +371,20 @@ const hexToHS = (hex) => {
     }
 };
 exports.hexToHS = hexToHS;
+const hslToHex = (hP, s, l = 50) => {
+    const h = (hP * 360) / 100;
+    l /= 100;
+    const a = (s * Math.min(l, 1 - l)) / 100;
+    const f = (n) => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color)
+            .toString(16)
+            .padStart(2, "0");
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+};
+exports.hslToHex = hslToHex;
 
 },{}],5:[function(require,module,exports){
 "use strict";

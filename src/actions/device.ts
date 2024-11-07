@@ -1,6 +1,14 @@
 import { DeviceSettingsInterface, GlobalSettingsInterface } from "../utils/interface";
-import { KeyDownEvent, KeyUpEvent, SDOnActionEvent, StreamDeckAction, StateType, TargetType } from "streamdeck-typescript";
-import { fetchApi, hexToHS, isGlobalSettingsSet } from "../utils/index";
+import {
+  KeyDownEvent,
+  KeyUpEvent,
+  SDOnActionEvent,
+  StreamDeckAction,
+  StateType,
+  TargetType,
+  WillAppearEvent,
+} from "streamdeck-typescript";
+import { fetchApi, hexToHS, hslToHex, isGlobalSettingsSet } from "../utils/index";
 
 import { DeviceStatus } from "@smartthings/core-sdk";
 import { Smartthings } from "../smartthings-plugin";
@@ -18,12 +26,52 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
   @SDOnActionEvent("keyDown")
   public async onKeyDown(eventData: KeyDownEvent<DeviceSettingsInterface>): Promise<void> {
     this.runAction(eventData);
-    // const globalSettings = this.plugin.settingsManager.getGlobalSettings<GlobalSettingsInterface>();
   }
 
-  @SDOnActionEvent("keyUp")
-  public async onKeyUp({ context, payload }: KeyUpEvent<DeviceSettingsInterface>): Promise<void> {
-    // const globalSettings = this.plugin.settingsManager.getGlobalSettings<GlobalSettingsInterface>();
+  // @SDOnActionEvent("keyUp")
+  // public async onKeyUp({ context, payload }: KeyUpEvent<DeviceSettingsInterface>): Promise<void> {
+  // }
+
+  @SDOnActionEvent("willAppear")
+  public async willAppear(eventData: WillAppearEvent<DeviceSettingsInterface>): Promise<void> {
+    this.checkDeviceStatus(eventData);
+  }
+
+  private async checkDeviceStatus({ context, payload }: WillAppearEvent<DeviceSettingsInterface>): Promise<void> {
+    const globalSettings = this.plugin.settingsManager.getGlobalSettings<GlobalSettingsInterface>();
+    if (isGlobalSettingsSet(globalSettings)) {
+      const token = globalSettings.accessToken;
+      const deviceId = payload.settings.deviceId;
+      const behavior = payload.settings.behaviour;
+      const deviceStatus = await this.getDeviceStatus(deviceId, token);
+
+      const mainComponents = deviceStatus.components?.main; // Object
+      if (!mainComponents) {
+        return
+      }
+
+      if ("switch" in mainComponents && behavior === "toggle") {
+        this.plugin.setState(mainComponents.switch.switch.value === "on" ? StateType.ON : StateType.OFF, context);
+      }
+      if ("switchLevel" in mainComponents && behavior === "more") {
+        await this.setSwitchLevel(deviceId, token, mainComponents.switchLevel.level.value as number);
+      }
+      if ("switchLevel" in mainComponents && behavior === "less") {
+        await this.setSwitchLevel(deviceId, token, mainComponents.switchLevel.level.value as number);
+      }
+      if ("colorControl" in mainComponents && behavior === "colors") {
+        // Testing Colors: #FF5733, #fffb03, #ff0303, #0326ff, #f003ff
+        const huePercent = mainComponents.colorControl.hue.value as number;
+        const saturation = mainComponents.colorControl.saturation.value as number;
+        
+        this.actualColor = hslToHex(huePercent, saturation)
+        // Set Icon Color
+        const svg = this.getSVGImageColor(this.actualColor);
+        const icon = `data:image/svg+xml;base64,${btoa(svg)}`;
+        this.plugin.setImageFromUrl(icon, context, TargetType.HARDWARE);
+      }
+
+    }
   }
 
   private async runAction({ context, payload }: KeyDownEvent<DeviceSettingsInterface>): Promise<void> {
@@ -32,6 +80,7 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
     if (isGlobalSettingsSet(globalSettings)) {
       const token = globalSettings.accessToken;
       const deviceId = payload.settings.deviceId;
+      const behavior = payload.settings.behaviour;
 
       const deviceStatus = await this.getDeviceStatus(deviceId, token);
 
@@ -43,7 +92,6 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
         return;
       }
 
-      const behavior = payload.settings.behaviour;
       const mainComponents = deviceStatus.components.main; // Object
 
       if ("switch" in mainComponents && behavior === "toggle") {
@@ -59,7 +107,7 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
         const prevLevel = ((mainComponents.switchLevel.level.value as number) -= 10);
         await this.setSwitchLevel(deviceId, token, prevLevel < 0 ? 0 : prevLevel);
       }
-      if ("colorControl" in deviceStatus.components?.main && behavior === "colors") {
+      if ("colorControl" in mainComponents && behavior === "colors") {
         // Testing Colors: #FF5733, #fffb03, #ff0303, #0326ff, #f003ff
         const colorsSettings = payload.settings.colors;
         if (!colorsSettings) {
@@ -81,7 +129,7 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
         // Set Icon Color
         const svg = this.getSVGImageColor(newColor);
         const icon = `data:image/svg+xml;base64,${btoa(svg)}`;
-        this.plugin.setImageFromUrl(icon, context, TargetType.HARDWARE)
+        this.plugin.setImageFromUrl(icon, context, TargetType.HARDWARE);
       }
       if ("doorControl" in deviceStatus.components?.main && behavior === "toggle") {
         const isActive = mainComponents.doorControl.door.value === "open";
@@ -165,7 +213,6 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
     });
   }
 
-
   private getSVGImageColor(hexColor: string) {
     return `
   <svg xmlns="http://www.w3.org/2000/svg" width="150" viewBox="0 0 512 512" height="150"
@@ -180,6 +227,5 @@ export class DeviceAction extends StreamDeckAction<Smartthings, DeviceAction> {
         fill="#a59d93" />
 </svg>
 `;
-}
-
+  }
 }
